@@ -6225,14 +6225,12 @@ var $elm$time$Time$Posix = function (a) {
 };
 var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
-var $author$project$Templates$Shell$init = function (global) {
-	return _Utils_Tuple2(
-		{counter: 0, global: global, posix: $elm$core$Maybe$Nothing},
-		A2($elm$core$Task$perform, $author$project$Templates$Shell$DefaultFrom, $elm$time$Time$now));
-};
+var $author$project$Templates$Shell$init = _Utils_Tuple2(
+	{counter: 0, posix: $elm$core$Maybe$Nothing},
+	A2($elm$core$Task$perform, $author$project$Templates$Shell$DefaultFrom, $elm$time$Time$now));
 var $author$project$Main$initWithGlobal = F2(
 	function (global, url) {
-		var _v0 = $author$project$Templates$Shell$init(global);
+		var _v0 = $author$project$Templates$Shell$init;
 		var shellModel = _v0.a;
 		var shellCmd = _v0.b;
 		var _v1 = A2(
@@ -6382,8 +6380,8 @@ var $author$project$Main$updateInit = F2(
 				$elm$core$Maybe$Just(newSession)),
 			model.url);
 	});
-var $author$project$Templates$Shell$update = F2(
-	function (msg, model) {
+var $author$project$Templates$Shell$update = F3(
+	function (global, msg, model) {
 		switch (msg.$) {
 			case 'DefaultFrom':
 				var posix = msg.a;
@@ -6412,7 +6410,7 @@ var $author$project$Templates$Shell$update = F2(
 					model,
 					A2(
 						$elm$browser$Browser$Navigation$pushUrl,
-						$author$project$Global$getNavKey(model.global),
+						$author$project$Global$getNavKey(global),
 						url));
 		}
 	});
@@ -6425,28 +6423,17 @@ var $author$project$Global$getCurrentUrl = function (globalState) {
 		return data.currentUrl;
 	}
 };
-var $author$project$Main$updateShell = function (model) {
-	var shellModel = model.shellModel;
-	return _Utils_update(
-		model,
-		{
-			shellModel: _Utils_update(
-				shellModel,
-				{global: model.global})
-		});
-};
 var $author$project$Main$updateSession = F2(
 	function (model, session) {
-		return $author$project$Main$updateShell(
-			_Utils_update(
-				model,
-				{
-					global: A3(
-						$author$project$Main$toGlobalState,
-						$author$project$Global$getNavKey(model.global),
-						$author$project$Global$getCurrentUrl(model.global),
-						session)
-				}));
+		return _Utils_update(
+			model,
+			{
+				global: A3(
+					$author$project$Main$toGlobalState,
+					$author$project$Global$getNavKey(model.global),
+					$author$project$Global$getCurrentUrl(model.global),
+					session)
+			});
 	});
 var $author$project$Main$updateInternal = F2(
 	function (msg, model) {
@@ -6467,7 +6454,7 @@ var $author$project$Main$updateInternal = F2(
 								model,
 								{shellModel: m});
 						},
-						A2($author$project$Templates$Shell$update, shellMsg, model.shellModel)));
+						A3($author$project$Templates$Shell$update, model.global, shellMsg, model.shellModel)));
 			case 'LoggedInMsg':
 				var redirectUrl = msg.a.redirectUrl;
 				var session = msg.a.session;
@@ -6798,6 +6785,7 @@ var $author$project$Main$mainViewProps = F2(
 	});
 var $author$project$Main$shellViewProps = function (model) {
 	return {
+		global: model.global,
 		onShellMsg: A2(
 			$elm$core$Basics$composeL,
 			A2($elm$core$Basics$composeL, $author$project$Main$ReadyMsg, $author$project$Main$ChangedInternal),
@@ -7341,7 +7329,7 @@ var $author$project$Templates$Shell$viewCounter = function (model) {
 					]))
 			]));
 };
-var $author$project$Templates$Shell$viewSessionName = function (model) {
+var $author$project$Templates$Shell$viewSessionName = function (global) {
 	var name = A2(
 		$elm$core$Maybe$withDefault,
 		'Welcome',
@@ -7350,7 +7338,7 @@ var $author$project$Templates$Shell$viewSessionName = function (model) {
 			function ($) {
 				return $.name;
 			},
-			$author$project$Global$getUser(model.global)));
+			$author$project$Global$getUser(global)));
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -7362,50 +7350,52 @@ var $author$project$Templates$Shell$viewSessionName = function (model) {
 				$elm$html$Html$text(name)
 			]));
 };
-var $author$project$Templates$Shell$viewRightSection = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('flex items-center space-x-4 gap-x-4')
-			]),
-		_List_fromArray(
-			[
-				$author$project$Templates$Shell$viewCounter(model),
-				$author$project$Templates$Shell$viewSessionName(model)
-			]));
-};
-var $author$project$Templates$Shell$viewHeader = function (model) {
-	return A2(
-		$elm$html$Html$header,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('bg-white shadow mb-4')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('max-w-7xl mx-auto sm:px-6 lg:px-8')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('flex justify-between items-center h-16')
-							]),
-						_List_fromArray(
-							[
-								$author$project$Templates$Shell$viewLeftSection(model.global),
-								$author$project$Templates$Shell$viewRightSection(model)
-							]))
-					]))
-			]));
-};
+var $author$project$Templates$Shell$viewRightSection = F2(
+	function (global, model) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex items-center space-x-4 gap-x-4')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Templates$Shell$viewCounter(model),
+					$author$project$Templates$Shell$viewSessionName(global)
+				]));
+	});
+var $author$project$Templates$Shell$viewHeader = F2(
+	function (global, model) {
+		return A2(
+			$elm$html$Html$header,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('bg-white shadow mb-4')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('max-w-7xl mx-auto sm:px-6 lg:px-8')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex justify-between items-center h-16')
+								]),
+							_List_fromArray(
+								[
+									$author$project$Templates$Shell$viewLeftSection(global),
+									A2($author$project$Templates$Shell$viewRightSection, global, model)
+								]))
+						]))
+				]));
+	});
 var $elm$html$Html$main_ = _VirtualDom_node('main');
 var $author$project$Templates$Shell$viewMain = function (content) {
 	return A2(
@@ -7432,7 +7422,7 @@ var $author$project$Templates$Shell$view = F2(
 						A2(
 						$elm$html$Html$map,
 						viewProps.onShellMsg,
-						$author$project$Templates$Shell$viewHeader(viewProps.shellModel)),
+						A2($author$project$Templates$Shell$viewHeader, viewProps.global, viewProps.shellModel)),
 						$author$project$Templates$Shell$viewMain(content),
 						A2(
 						$elm$html$Html$map,

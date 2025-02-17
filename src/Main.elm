@@ -68,7 +68,7 @@ initWithGlobal : GlobalState -> Url.Url -> ( Model, Cmd Msg )
 initWithGlobal global url =
     let
         ( shellModel, shellCmd ) =
-            Shell.init global
+            Shell.init
 
         ( page, cmd ) =
             Route.fromUrl url
@@ -126,7 +126,7 @@ redirectTo model url =
 
 updateSession : ReadyModel -> Maybe Session -> ReadyModel
 updateSession model session =
-    updateShell { model | global = toGlobalState (Global.getNavKey model.global) (Global.getCurrentUrl model.global) session }
+    { model | global = toGlobalState (Global.getNavKey model.global) (Global.getCurrentUrl model.global) session }
 
 
 toGlobalState : Nav.Key -> Url.Url -> Maybe Session -> GlobalState
@@ -148,15 +148,6 @@ updateUrl global url =
         GlobalStateAnonymous data ->
             Debug.log ("Set anonymous url to: " ++ url.path)
             GlobalStateAnonymous { data | currentUrl = url }
-
-updateShell : ReadyModel -> ReadyModel
-updateShell model =
-    let
-        shellModel : Shell.Model
-        shellModel =
-            model.shellModel
-    in
-    { model | shellModel = { shellModel | global = model.global } }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -223,7 +214,7 @@ updateInternal : InternalMsg -> ReadyModel -> ( ReadyModel, Cmd Msg )
 updateInternal msg model =
     case msg of
         ShellMsg shellMsg ->
-            Shell.update shellMsg model.shellModel
+            Shell.update model.global shellMsg model.shellModel
                 |> Tuple.mapFirst (\m -> { model | shellModel = m })
                 |> Tuple.mapSecond (Cmd.map (ReadyMsg << ChangedInternal << ShellMsg))
 
@@ -278,7 +269,8 @@ updatePropsWithSessionUpdate pageMsg =
 
 shellViewProps : ReadyModel -> Shell.ViewProps Msg
 shellViewProps model =
-    { shellModel = model.shellModel
+    { global = model.global
+    , shellModel = model.shellModel
     , onShellMsg = ReadyMsg << ChangedInternal << ShellMsg
     }
 
