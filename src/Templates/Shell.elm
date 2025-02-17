@@ -8,7 +8,8 @@ import Html.Attributes as Attr
 import Html.Events as Events exposing (onClick)
 import Task
 import Time
-import Url exposing (Url)
+import Url
+
 
 type alias ViewProps a =
     { global : GlobalState
@@ -113,7 +114,6 @@ getLinks global =
             [ ( "Home", "/" )
             , ( "Content", "/content" )
             ]
-
     in
     case global of
         GlobalStateAnonymous _ ->
@@ -121,6 +121,7 @@ getLinks global =
 
         GlobalStateAuthenticated _ ->
             allUsers ++ [ ( "Restricted", "/restricted" ), ( "Logout", "/logout" ) ]
+
 
 viewNavLink : Url.Url -> ( String, String ) -> Html Msg
 viewNavLink currentUrl ( label, href ) =
@@ -139,6 +140,7 @@ viewNavLink currentUrl ( label, href ) =
                 , "font-medium"
                 , if isActive then
                     "bg-gray-100 text-gray-900"
+
                   else
                     "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                 ]
@@ -148,7 +150,6 @@ viewNavLink currentUrl ( label, href ) =
         , Attr.class linkClasses
         ]
         [ H.text label ]
-
 
 
 viewRightSection : GlobalState -> Model -> Html Msg

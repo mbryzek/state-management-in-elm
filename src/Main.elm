@@ -142,11 +142,9 @@ updateUrl : GlobalState -> Url.Url -> GlobalState
 updateUrl global url =
     case global of
         GlobalStateAuthenticated data ->
-            Debug.log ("Set authenticated url to: " ++ url.path)
             GlobalStateAuthenticated { data | currentUrl = url }
 
         GlobalStateAnonymous data ->
-            Debug.log ("Set anonymous url to: " ++ url.path)
             GlobalStateAnonymous { data | currentUrl = url }
 
 
