@@ -11,7 +11,8 @@ import Time
 import Url exposing (Url)
 
 type alias ViewProps a =
-    { shellModel : Model
+    { global : GlobalState
+    , shellModel : Model
     , onShellMsg : Msg -> a
     }
 
@@ -38,8 +39,8 @@ type Msg
     | DefaultFrom Time.Posix
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : GlobalState -> Msg -> Model -> ( Model, Cmd Msg )
+update global msg model =
     case msg of
         DefaultFrom posix ->
             ( { model | posix = Just posix }, Cmd.none )
@@ -51,25 +52,25 @@ update msg model =
             ( { model | counter = model.counter - 1 }, Cmd.none )
 
         RedirectTo url ->
-            ( model, Nav.pushUrl (Global.getNavKey model.global) url )
+            ( model, Nav.pushUrl (Global.getNavKey global) url )
 
 
 view : ViewProps a -> Html a -> List (Html a)
 view viewProps content =
     [ H.div [ Attr.class "min-h-screen flex flex-col pl-4 pr-4" ]
-        [ viewHeader viewProps.shellModel |> H.map viewProps.onShellMsg
+        [ viewHeader viewProps.global viewProps.shellModel |> H.map viewProps.onShellMsg
         , viewMain content
         , viewFooter viewProps.shellModel |> H.map viewProps.onShellMsg
         ]
     ]
 
 
-viewHeader : Model -> Html Msg
-viewHeader model =
+viewHeader : GlobalState -> Model -> Html Msg
+viewHeader global model =
     H.header [ Attr.class "bg-white shadow mb-4" ]
         [ H.div [ Attr.class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
             [ H.div [ Attr.class "flex justify-between items-center h-16" ]
-                [ viewLeftSection model.global
+                [ viewLeftSection global
                 , viewRightSection model
                 ]
             ]
