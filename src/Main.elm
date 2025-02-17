@@ -61,7 +61,7 @@ init flags url key =
             )
 
         Nothing ->
-            initWithGlobal (toGlobalState key Nothing) url
+            initWithGlobal (toGlobalState key url Nothing) url
 
 
 initWithGlobal : GlobalState -> Url.Url -> ( Model, Cmd Msg )
@@ -126,18 +126,28 @@ redirectTo model url =
 
 updateSession : ReadyModel -> Maybe Session -> ReadyModel
 updateSession model session =
-    updateShell { model | global = toGlobalState (Global.getNavKey model.global) session }
+    updateShell { model | global = toGlobalState (Global.getNavKey model.global) (Global.getCurrentUrl model.global) session }
 
 
-toGlobalState : Nav.Key -> Maybe Session -> GlobalState
-toGlobalState key maybeSession =
+toGlobalState : Nav.Key -> Url.Url -> Maybe Session -> GlobalState
+toGlobalState key currentUrl maybeSession =
     case maybeSession of
         Just u ->
-            GlobalStateAuthenticated { navKey = key, session = u }
+            GlobalStateAuthenticated { navKey = key, session = u, currentUrl = currentUrl }
 
         Nothing ->
-            GlobalStateAnonymous { navKey = key }
+            GlobalStateAnonymous { navKey = key, currentUrl = currentUrl }
 
+updateUrl : GlobalState -> Url.Url -> GlobalState
+updateUrl global url =
+    case global of
+        GlobalStateAuthenticated data ->
+            Debug.log ("Set authenticated url to: " ++ url.path)
+            GlobalStateAuthenticated { data | currentUrl = url }
+
+        GlobalStateAnonymous data ->
+            Debug.log ("Set anonymous url to: " ++ url.path)
+            GlobalStateAnonymous { data | currentUrl = url }
 
 updateShell : ReadyModel -> ReadyModel
 updateShell model =
@@ -166,7 +176,7 @@ update msg model =
                     Route.fromUrl url
                         |> getPageFromRoute readyModel.global
             in
-            ( Ready { readyModel | page = page }
+            ( Ready { readyModel | page = page, global = updateUrl readyModel.global url }
             , Cmd.map (ReadyMsg << ChangedPage) cmd
             )
 
@@ -195,7 +205,7 @@ updateInit msg model =
                 newSession =
                     { id = sessionId, user = { name = "John Doe" } }
             in
-            initWithGlobal (toGlobalState model.key (Just newSession)) model.url
+            initWithGlobal (toGlobalState model.key model.url (Just newSession)) model.url
 
 
 updateReady : ReadyMsg -> ReadyModel -> ( ReadyModel, Cmd Msg )
