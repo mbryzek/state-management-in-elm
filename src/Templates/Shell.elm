@@ -71,7 +71,7 @@ viewHeader global model =
         [ H.div [ Attr.class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
             [ H.div [ Attr.class "flex justify-between items-center h-16" ]
                 [ viewLeftSection global
-                , viewRightSection model
+                , viewRightSection global model
                 ]
             ]
         ]
@@ -151,11 +151,11 @@ viewNavLink currentUrl ( label, href ) =
 
 
 
-viewRightSection : Model -> Html Msg
-viewRightSection model =
+viewRightSection : GlobalState -> Model -> Html Msg
+viewRightSection global model =
     H.div [ Attr.class "flex items-center space-x-4 gap-x-4" ]
         [ viewCounter model
-        , viewSessionName model
+        , viewSessionName global
         ]
 
 
@@ -192,12 +192,12 @@ counterButtonClasses =
         ]
 
 
-viewSessionName : Model -> Html Msg
-viewSessionName model =
+viewSessionName : GlobalState -> Html Msg
+viewSessionName global =
     let
         name : String
         name =
-            getUser model.global
+            getUser global
                 |> Maybe.map .name
                 |> Maybe.withDefault "Welcome"
     in
