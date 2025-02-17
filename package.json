@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "elm-review": "^2.12.0",
+    "tailwindcss": "^3.4.12"
+  },
+  "dependencies": {
+    "uglifyjs": "^2.4.11"
+  }
+}
