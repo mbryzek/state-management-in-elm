@@ -2,18 +2,14 @@
 
 See https://bryzek.org/blog/state-management-in-elm
 
-# Running Locally
-
-```
-npm install -D @tailwindcss/forms
-```
-
-In one terminal:
+## Running Locally
 ```
 ./run.sh
 ```
 
-In another terminal (if you want to update Tailwind CSS Classes)
+## If you also want to update Tailwind CSS Classes
+
 ```
+npm install -D @tailwindcss/forms
 ./run-tailwind.sh
 ```
