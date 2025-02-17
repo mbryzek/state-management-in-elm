@@ -8,25 +8,25 @@ import Html.Attributes as Attr
 import Html.Events as Events exposing (onClick)
 import Task
 import Time
+import Url
 
 
 type alias ViewProps a =
-    { shellModel : Model
+    { global : GlobalState
+    , shellModel : Model
     , onShellMsg : Msg -> a
     }
 
 
 type alias Model =
-    { global : GlobalState
-    , counter : Int
+    { counter : Int
     , posix : Maybe Time.Posix
     }
 
 
-init : GlobalState -> ( Model, Cmd Msg )
-init global =
-    ( { global = global
-      , counter = 0
+init : ( Model, Cmd Msg )
+init =
+    ( { counter = 0
       , posix = Nothing
       }
     , Task.perform DefaultFrom Time.now
@@ -40,8 +40,8 @@ type Msg
     | DefaultFrom Time.Posix
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : GlobalState -> Msg -> Model -> ( Model, Cmd Msg )
+update global msg model =
     case msg of
         DefaultFrom posix ->
             ( { model | posix = Just posix }, Cmd.none )
@@ -53,26 +53,26 @@ update msg model =
             ( { model | counter = model.counter - 1 }, Cmd.none )
 
         RedirectTo url ->
-            ( model, Nav.pushUrl (Global.getNavKey model.global) url )
+            ( model, Nav.pushUrl (Global.getNavKey global) url )
 
 
 view : ViewProps a -> Html a -> List (Html a)
 view viewProps content =
     [ H.div [ Attr.class "min-h-screen flex flex-col pl-4 pr-4" ]
-        [ viewHeader viewProps.shellModel |> H.map viewProps.onShellMsg
+        [ viewHeader viewProps.global viewProps.shellModel |> H.map viewProps.onShellMsg
         , viewMain content
         , viewFooter viewProps.shellModel |> H.map viewProps.onShellMsg
         ]
     ]
 
 
-viewHeader : Model -> Html Msg
-viewHeader model =
+viewHeader : GlobalState -> Model -> Html Msg
+viewHeader global model =
     H.header [ Attr.class "bg-white shadow mb-4" ]
         [ H.div [ Attr.class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
             [ H.div [ Attr.class "flex justify-between items-center h-16" ]
-                [ viewLeftSection model.global
-                , viewRightSection model
+                [ viewLeftSection global
+                , viewRightSection global model
                 ]
             ]
         ]
@@ -103,54 +103,60 @@ viewLogo =
 viewNavLinks : GlobalState -> Html Msg
 viewNavLinks global =
     H.nav [ Attr.class "ml-10 flex space-x-4" ]
-        (List.map viewNavLink (getLinks global))
+        (List.map (viewNavLink (Global.getCurrentUrl global)) (getLinks global))
 
 
 getLinks : GlobalState -> List ( String, String )
 getLinks global =
+    let
+        allUsers : List ( String, String )
+        allUsers =
+            [ ( "Home", "/" )
+            , ( "Content", "/content" )
+            ]
+    in
     case global of
         GlobalStateAnonymous _ ->
-            [ ( "Home", "/" )
-            , ( "Content", "/content" )
-            , ( "Login", "/login" )
-            ]
+            allUsers ++ [ ( "Login", "/login" ) ]
 
         GlobalStateAuthenticated _ ->
-            [ ( "Home", "/" )
-            , ( "Content", "/content" )
-            , ( "Restricted", "/restricted" )
-            , ( "Logout", "/logout" )
-            ]
+            allUsers ++ [ ( "Restricted", "/restricted" ), ( "Logout", "/logout" ) ]
 
 
-viewNavLink : ( String, String ) -> Html Msg
-viewNavLink ( label, href ) =
+viewNavLink : Url.Url -> ( String, String ) -> Html Msg
+viewNavLink currentUrl ( label, href ) =
+    let
+        isActive : Bool
+        isActive =
+            currentUrl.path == href
+
+        linkClasses : String
+        linkClasses =
+            String.join " "
+                [ "px-3"
+                , "py-2"
+                , "rounded-md"
+                , "text-sm"
+                , "font-medium"
+                , if isActive then
+                    "bg-gray-100 text-gray-900"
+
+                  else
+                    "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                ]
+    in
     H.button
-        [ Attr.class navLinkClasses
-        , onClick (RedirectTo href)
+        [ onClick (RedirectTo href)
+        , Attr.class linkClasses
         ]
         [ H.text label ]
 
 
-navLinkClasses : String
-navLinkClasses =
-    String.join " "
-        [ "px-3"
-        , "py-2"
-        , "rounded-md"
-        , "text-sm"
-        , "font-medium"
-        , "text-gray-700"
-        , "hover:text-gray-900"
-        , "hover:bg-gray-50"
-        ]
-
-
-viewRightSection : Model -> Html Msg
-viewRightSection model =
+viewRightSection : GlobalState -> Model -> Html Msg
+viewRightSection global model =
     H.div [ Attr.class "flex items-center space-x-4 gap-x-4" ]
         [ viewCounter model
-        , viewSessionName model
+        , viewSessionName global
         ]
 
 
@@ -187,12 +193,12 @@ counterButtonClasses =
         ]
 
 
-viewSessionName : Model -> Html Msg
-viewSessionName model =
+viewSessionName : GlobalState -> Html Msg
+viewSessionName global =
     let
         name : String
         name =
-            getUser model.global
+            getUser global
                 |> Maybe.map .name
                 |> Maybe.withDefault "Welcome"
     in

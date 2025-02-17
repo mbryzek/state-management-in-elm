@@ -61,14 +61,14 @@ init flags url key =
             )
 
         Nothing ->
-            initWithGlobal (toGlobalState key Nothing) url
+            initWithGlobal (toGlobalState key url Nothing) url
 
 
 initWithGlobal : GlobalState -> Url.Url -> ( Model, Cmd Msg )
 initWithGlobal global url =
     let
         ( shellModel, shellCmd ) =
-            Shell.init global
+            Shell.init
 
         ( page, cmd ) =
             Route.fromUrl url
@@ -126,27 +126,26 @@ redirectTo model url =
 
 updateSession : ReadyModel -> Maybe Session -> ReadyModel
 updateSession model session =
-    updateShell { model | global = toGlobalState (Global.getNavKey model.global) session }
+    { model | global = toGlobalState (Global.getNavKey model.global) (Global.getCurrentUrl model.global) session }
 
 
-toGlobalState : Nav.Key -> Maybe Session -> GlobalState
-toGlobalState key maybeSession =
+toGlobalState : Nav.Key -> Url.Url -> Maybe Session -> GlobalState
+toGlobalState key currentUrl maybeSession =
     case maybeSession of
         Just u ->
-            GlobalStateAuthenticated { navKey = key, session = u }
+            GlobalStateAuthenticated { navKey = key, session = u, currentUrl = currentUrl }
 
         Nothing ->
-            GlobalStateAnonymous { navKey = key }
+            GlobalStateAnonymous { navKey = key, currentUrl = currentUrl }
 
+updateUrl : GlobalState -> Url.Url -> GlobalState
+updateUrl global url =
+    case global of
+        GlobalStateAuthenticated data ->
+            GlobalStateAuthenticated { data | currentUrl = url }
 
-updateShell : ReadyModel -> ReadyModel
-updateShell model =
-    let
-        shellModel : Shell.Model
-        shellModel =
-            model.shellModel
-    in
-    { model | shellModel = { shellModel | global = model.global } }
+        GlobalStateAnonymous data ->
+            GlobalStateAnonymous { data | currentUrl = url }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -166,7 +165,7 @@ update msg model =
                     Route.fromUrl url
                         |> getPageFromRoute readyModel.global
             in
-            ( Ready { readyModel | page = page }
+            ( Ready { readyModel | page = page, global = updateUrl readyModel.global url }
             , Cmd.map (ReadyMsg << ChangedPage) cmd
             )
 
@@ -195,7 +194,7 @@ updateInit msg model =
                 newSession =
                     { id = sessionId, user = { name = "John Doe" } }
             in
-            initWithGlobal (toGlobalState model.key (Just newSession)) model.url
+            initWithGlobal (toGlobalState model.key model.url (Just newSession)) model.url
 
 
 updateReady : ReadyMsg -> ReadyModel -> ( ReadyModel, Cmd Msg )
@@ -213,7 +212,7 @@ updateInternal : InternalMsg -> ReadyModel -> ( ReadyModel, Cmd Msg )
 updateInternal msg model =
     case msg of
         ShellMsg shellMsg ->
-            Shell.update shellMsg model.shellModel
+            Shell.update model.global shellMsg model.shellModel
                 |> Tuple.mapFirst (\m -> { model | shellModel = m })
                 |> Tuple.mapSecond (Cmd.map (ReadyMsg << ChangedInternal << ShellMsg))
 
@@ -268,7 +267,8 @@ updatePropsWithSessionUpdate pageMsg =
 
 shellViewProps : ReadyModel -> Shell.ViewProps Msg
 shellViewProps model =
-    { shellModel = model.shellModel
+    { global = model.global
+    , shellModel = model.shellModel
     , onShellMsg = ReadyMsg << ChangedInternal << ShellMsg
     }
 

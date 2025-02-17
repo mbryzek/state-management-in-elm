@@ -1,6 +1,7 @@
 module Global exposing (..)
 
 import Browser.Navigation as Nav
+import Url exposing (Url)
 
 
 type alias MainViewProps a b =
@@ -42,11 +43,13 @@ type GlobalState
 
 type alias GlobalStateAnonymousData =
     { navKey : Nav.Key
+    , currentUrl : Url
     }
 
 
 type alias GlobalStateAuthenticatedData =
     { navKey : Nav.Key
+    , currentUrl : Url
     , session : Session
     }
 
@@ -59,6 +62,16 @@ getNavKey globalState =
 
         GlobalStateAuthenticated data ->
             data.navKey
+
+
+getCurrentUrl : GlobalState -> Url
+getCurrentUrl globalState =
+    case globalState of
+        GlobalStateAnonymous data ->
+            data.currentUrl
+
+        GlobalStateAuthenticated data ->
+            data.currentUrl
 
 
 type alias Session =
