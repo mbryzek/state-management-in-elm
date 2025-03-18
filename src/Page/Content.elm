@@ -1,3 +1,4 @@
+-- codegen.global.state: GlobalStateAnonymousData
 module Page.Content exposing (view)
 
 import Browser as B

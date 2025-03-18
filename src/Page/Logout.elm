@@ -1,3 +1,4 @@
+-- codegen.global.state: GlobalStateAnonymousData
 module Page.Logout exposing (Msg, init, update, view)
 
 import Browser as B
