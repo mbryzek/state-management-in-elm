@@ -6115,11 +6115,9 @@ var $author$project$Page$Logout$Logout = {$: 'Logout'};
 var $author$project$Page$Logout$init = $author$project$Util$Task$dispatch($author$project$Page$Logout$Logout);
 var $author$project$Page$Restricted$contents = _List_fromArray(
 	['This is an example of a page that is restricted to authenticated users.', 'By declaring the init method to take a GlobalStateAuthenticatedData, we can ensure that the page is only rendered if the user is authenticated.', 'If the user is not authenticated, they will be redirected to the login page - this logic is handled in Main.', 'You can test this by logging out and then coming back to this URL.']);
-var $author$project$Page$Restricted$init = function (_v0) {
-	return {
-		fetchArticle: $elm$core$Maybe$Just(
-			{content: $author$project$Page$Restricted$contents, title: 'Example article'})
-	};
+var $author$project$Page$Restricted$init = {
+	fetchArticle: $elm$core$Maybe$Just(
+		{content: $author$project$Page$Restricted$contents, title: 'Example article'})
 };
 var $elm$core$Platform$Cmd$map = _Platform_map;
 var $elm$core$Tuple$mapFirst = F2(
@@ -6192,14 +6190,13 @@ var $author$project$Main$getPageFromRoute = F2(
 					return A2(
 						$author$project$Main$pageAuthenticatedData,
 						global,
-						function (g) {
+						function (_v5) {
 							return _Utils_Tuple2(
-								$author$project$Main$PageRestricted(
-									$author$project$Page$Restricted$init(g)),
+								$author$project$Main$PageRestricted($author$project$Page$Restricted$init),
 								$elm$core$Platform$Cmd$none);
 						});
 				default:
-					var _v5 = maybeRoute.a;
+					var _v6 = maybeRoute.a;
 					return _Utils_Tuple2($author$project$Main$PageContent, $elm$core$Platform$Cmd$none);
 			}
 		} else {

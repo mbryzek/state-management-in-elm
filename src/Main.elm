@@ -332,8 +332,8 @@ getPageFromRoute global maybeRoute =
             ( PageLogout, PageLogout.init |> Cmd.map PageLogoutMsg)
 
         Just Route.RouteRestricted ->
-            pageAuthenticatedData global (\g ->
-                ( PageRestricted.init g |> PageRestricted, Cmd.none)
+            pageAuthenticatedData global (\_ ->
+                ( PageRestricted.init |> PageRestricted, Cmd.none)
             )
         Just Route.RouteContent ->
             ( PageContent, Cmd.none )

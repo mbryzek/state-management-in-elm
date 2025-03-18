@@ -1,3 +1,4 @@
+-- codegen.global.state: GlobalStateAuthenticatedData
 module Page.Restricted exposing (Model, Article, init, view)
 
 import Browser as B
@@ -18,8 +19,8 @@ type alias Article =
 
 
 
-init : GlobalStateAuthenticatedData -> Model
-init _ =
+init : Model
+init =
     { fetchArticle = Just {
         title = "Example article"
         , content = contents
