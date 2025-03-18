@@ -6667,24 +6667,17 @@ var $author$project$Main$updateReady = F2(
 				A2($author$project$Main$updatePage, model, pageMsg));
 		}
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$updateUrl = F2(
 	function (global, url) {
 		if (global.$ === 'GlobalStateAuthenticated') {
 			var data = global.a;
-			return A3(
-				$elm$core$Debug$log,
-				'Set authenticated url to: ' + url.path,
-				$author$project$Global$GlobalStateAuthenticated,
+			return $author$project$Global$GlobalStateAuthenticated(
 				_Utils_update(
 					data,
 					{currentUrl: url}));
 		} else {
 			var data = global.a;
-			return A3(
-				$elm$core$Debug$log,
-				'Set anonymous url to: ' + url.path,
-				$author$project$Global$GlobalStateAnonymous,
+			return $author$project$Global$GlobalStateAnonymous(
 				_Utils_update(
 					data,
 					{currentUrl: url}));
