@@ -1,10 +1,11 @@
 -- codegen.global.state: GlobalStateAuthenticatedData
-module Page.Restricted exposing (Model, Article, init, view)
+
+
+module Page.Restricted exposing (Article, Model, init, view)
 
 import Browser as B
 import Html as H
 import Html.Attributes exposing (class)
-import Global exposing (GlobalStateAuthenticatedData)
 import Templates.Shell as Shell
 import Util.Ui exposing (..)
 
@@ -12,19 +13,20 @@ import Util.Ui exposing (..)
 type alias Model =
     { fetchArticle : Maybe Article }
 
+
 type alias Article =
     { title : String
     , content : List String
     }
 
 
-
 init : Model
 init =
-    { fetchArticle = Just {
-        title = "Example article"
-        , content = contents
-        }
+    { fetchArticle =
+        Just
+            { title = "Example article"
+            , content = contents
+            }
     }
 
 
@@ -34,15 +36,17 @@ view shellProps model =
     , body = Shell.view shellProps (renderArticle model.fetchArticle)
     }
 
+
 renderArticle : Maybe Article -> H.Html mainMsg
 renderArticle article =
     case article of
         Just a ->
             H.div [ class "flex flex-col gap-y-4 items-start" ]
                 (List.append [ para a.title ] (List.map para a.content))
-        
+
         Nothing ->
             H.text "Loading..."
+
 
 contents : List String
 contents =
